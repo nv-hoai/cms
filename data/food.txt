@@ -1,0 +1,10 @@
+Burger;50;5;/image/burger.png
+Pizza;30;8;/image/pizza.png
+Pasta;20;6;/image/pasta.png
+Salad;15;4;/image/salad.png
+Soda;100;1;/image/soda.png
+Sandwich;40;3;/image/sandwich.png
+Fries;60;2;/image/fries.png
+Ice Cream;25;3;/image/ice_scream.png
+Chicken Wings;10;7;/image/chicken_wings.png
+Steak;5;12;/image/steak.png

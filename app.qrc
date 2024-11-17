@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/computer-device-digital-svgrepo-com.svg</file>
+        <file>image/user-svgrepo-com.svg</file>
+        <file>image/save-floppy-svgrepo-com.svg</file>
+        <file>image/employee-id-svgrepo-com.svg</file>
+        <file>image/burger.png</file>
+        <file>image/pizza.png</file>
+        <file>image/chicken_wings.png</file>
+        <file>image/fries.png</file>
+        <file>image/ice_scream.png</file>
+        <file>image/pasta.png</file>
+        <file>image/salad.png</file>
+        <file>image/sandwich.png</file>
+        <file>image/soda.png</file>
+        <file>image/steak.png</file>
+    </qresource>
+</RCC>
