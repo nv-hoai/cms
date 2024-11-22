@@ -35,8 +35,8 @@ void Receipt::setStatus(bool newStatus)
 int Receipt::totalCharge() const
 {
     int sum = 0;
-    for(auto it=m_serviceList.begin(); it!=m_serviceList.end(); ++it) {
-        sum += (*it)->totalCost();
+    for(int i=0; i<map.getSize(); ++i) {
+        sum += m_serviceList[map[i]]->totalCost();
     }
     return sum;
 }
@@ -44,9 +44,17 @@ int Receipt::totalCharge() const
 void Receipt::receiveServiceList(const int& customerId, DoubleLinkedList<Service *> &serviceList)
 {
     for(auto it=serviceList.begin(); it!=serviceList.end(); ++it) {
-        if ((*it)->customer()->id() == customerId && ((*it)->status()))
+        if ((*it)->customer()->id() == customerId) {
             m_serviceList.append((*it));
+            if ((*it)->status() == 1)
+                map.append(m_serviceList.getSize()-1);
+        }
     }
+}
+
+DoubleLinkedList<Service *> &Receipt::serviceList()
+{
+    return m_serviceList;
 }
 
 Customer *Receipt::customer() const
@@ -57,13 +65,13 @@ Customer *Receipt::customer() const
 Service *Receipt::getService(const int &index)
 {
     if (index >= 0 && index < m_serviceList.getSize())
-        return m_serviceList[index];
+        return m_serviceList[map[index]];
     return nullptr;
 }
 
 int Receipt::serviceNumber()
 {
-    return m_serviceList.getSize();
+    return map.getSize();
 }
 
 QString Receipt::paidTime() const {

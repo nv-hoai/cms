@@ -12,16 +12,15 @@ Dialog {
     modal: true
     closePolicy: Popup.NoAutoClose
 
-    property int numberOrdered;
+    property string serviceName;
     property int customerId;
     property int computerId;
     property int foodId;
-    property int timeUse;
+    property int timeUsed;
+    property int numberOrdered;
     property int customerIndex;
     property int computerIndex;
     property int foodIndex;
-    property string serviceName;
-    property string startTime;
     property var customer: null;
     property var computer: null;
     property var food: null;
@@ -33,12 +32,16 @@ Dialog {
     }
 
     onOpened: {
-        timeUse = 0;
-        numberOrdered = 0;
         computerId = 0;
         foodId = 0;
-        customerId = 0;
-        customerIdInput.value = 1;
+        if (serviceName == "Hire computer")
+            customerId = 0;
+        timeUsed = 0;
+        numberOrdered = 0;
+        if (serviceName == "Hire computer")
+            customerIdInput.value = 1;
+        else
+            customerIdInput.value = customerId;
         computerIdInput.value = 1;
         foodIdInput.value = 1;
         customer = SystemManager.customerModel.getCustomer(customerIdInput.value);
@@ -47,35 +50,35 @@ Dialog {
     }
 
     onAccepted: {
-        serviceName = serviceNameInput.currentValue;
         customerId = customerIdInput.value;
-        customerIndex = SystemManager.customerModel.getIndexById(customerId);
-        SystemManager.customerModel.setStatus(customerIndex, 2);
         if (serviceName == "Hire computer") {
+            customerIndex = SystemManager.customerModel.getIndexById(customerId);
+            SystemManager.customerModel.setStatus(customerIndex, 2);
             computerId = computerIdInput.value;
-            timeUse = timeUseInput.text;
+            timeUsed = timeUsedInput.text;
             computerIndex = SystemManager.computerModel.getIndexById(computerId);
             SystemManager.computerModel.setStatus(computerIndex, 2);
         }
 
         if (serviceName == "Order food") {
             foodId = foodIdInput.value;
-            foodIndex = SystemManager.foodModel.getIndexById(foodId);
             numberOrdered = parseInt(numberOrderedInput.text);
-            SystemManager.foodModel.setRemain(foodIndex, food.remain - numberOrdered);
         }
-        receiveServiceData(serviceName, customerId, computerId, timeUse, foodId, numberOrdered);
+        receiveServiceData(serviceName, customerId, computerId, timeUsed, foodId, numberOrdered);
     }
 
     function isSaveAllowed() {
-        return !((serviceNameInput.currentValue == "Hire computer" && (customerNameShow.text == "Invalid customer id!" ||
-                   invalidComputerId.visible || invalidTimeUse.visible)) ||
-                 (serviceNameInput.currentValue == "Order food" && (foodNameShow.text == "Invalid food id!" ||
+        return !((serviceName == "Hire computer" &&
+                  (invalidCustomerId.visible ||
+                   invalidComputerId.visible ||
+                   invalidTimeUsed.visible)) ||
+                 (serviceName == "Order food" &&
+                  (foodNameShow.text == "Invalid food id!" ||
                    invalidNumberOrdered.visible)));
     }
 
-    function isVisible() {
-        if (serviceNameInput.currentValue == "Hire computer")
+    function checkNumberVisible() {
+        if (serviceName == "Hire computer")
             return false
         if (numberOrderedInput.text == "")
             return true;
@@ -94,7 +97,7 @@ Dialog {
         return false;
     }
 
-    function errorWhat() {
+    function checkNumberOrdered() {
         if (numberOrderedInput.text == "")
             return "Number cant be left empty!";
         if (food && food.remain == 0)
@@ -104,25 +107,45 @@ Dialog {
         if (food)
             return "Not enough food's remain to sell! " +
             "(" + (food.remain + ((foodId == foodIdInput.value)?numberOrdered:0)) + " available)";
+        return ""
+    }
+
+    function checkComputer() {
+        if (!computer)
+            return "Invalid computer id"
+        if (computer.status != 0)
+            switch(computer.status) {
+            case 1:
+                return "Computer is busy!"
+            case 2:
+                return "Computer is being registered by the other!"
+            case 3:
+                return "Computer is cracked!"
+            }
+        return ""
+    }
+
+    function checkCustomer() {
+        if (!customer)
+            return "Invalid customer id"
+        if (customer.status != 0)
+            switch(customer.status) {
+            case 1:
+                return "Customer is now hiring a computer!"
+            case 2:
+                return "Customer is registering in another service!"
+            }
+        return ""
     }
 
     ColumnLayout {
         anchors.fill: parent
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.maximumHeight: 24
 
-            Text {
-                text: "Service name"
-                font.pixelSize: 16
-                font.weight: 40
-            }
-
-            ComboBox {
-                id: serviceNameInput
-                model: ["Hire computer", "Order food"]
-            }
+        Text {
+            text: "Service name: " + serviceName
+            font.pixelSize: 16
+            font.weight: 40
         }
 
         RowLayout {
@@ -130,13 +153,21 @@ Dialog {
             Layout.maximumHeight: 24
 
             Text {
-                text: "Customer's ID"
+                text: "Customer's ID: "
+                font.pixelSize: 16
+                font.weight: 40
+            }
+
+            Text {
+                visible: serviceName == "Order food"
+                text: (customer)?customer.id:""
                 font.pixelSize: 16
                 font.weight: 40
             }
 
             SpinBox {
                 id: customerIdInput
+                visible: serviceName == "Hire computer"
                 Layout.fillHeight: true
                 editable: true
                 from: 1
@@ -148,19 +179,26 @@ Dialog {
             }
 
             Text {
-                id: customerNameShow
-                text: (customer)?customer.firstName + " " + customer.lastName: "Invalid customer id!"
+                text: (customer)?customer.firstName + " " + customer.lastName: ""
                 font.pixelSize: 16
                 font.weight: 40
-                color: (text == "Invalid customer id!")?"red":"black"
             }
+        }
+
+        Text {
+            id: invalidCustomerId
+            text: root.checkCustomer()
+            visible: (serviceName == "Hire computer" && text != "")
+            font.pixelSize: 16
+            font.weight: 40
+            color: "red"
         }
 
 
         RowLayout {
             Layout.fillWidth: true
             Layout.maximumHeight: 24
-            visible: (serviceNameInput.currentValue == "Hire computer")
+            visible: (serviceName == "Hire computer")
 
             Text {
                 text: "Computer's ID"
@@ -179,21 +217,21 @@ Dialog {
                     computer = SystemManager.computerModel.getComputer(computerIdInput.value);
                 }
             }
+        }
 
-            Text {
-                id: invalidComputerId
-                visible: (computer)?(computer.status != 0 && computer.id != computerId):false
-                text: (computer)?(computer.status == 1)?"Computer is busy!":(computer.status==2)?"Computer is being registered by the other":"Computer is cracked!":""
-                font.pixelSize: 16
-                font.weight: 40
-                color: "red"
-            }
+        Text {
+            id: invalidComputerId
+            visible: (serviceName == "Hire computer" && text != "")
+            text: root.checkComputer()
+            font.pixelSize: 16
+            font.weight: 40
+            color: "red"
         }
 
         RowLayout {
             Layout.fillWidth: true
             Layout.maximumHeight: 24
-            visible: (serviceNameInput.currentValue == "Hire computer")
+            visible: (serviceName == "Hire computer")
 
             Text {
                 text: "Time use"
@@ -202,8 +240,8 @@ Dialog {
             }
 
             TextField {
-                id: timeUseInput
-                text: root.timeUse
+                id: timeUsedInput
+                text: root.timeUsed
                 inputMask: "9999"
                 placeholderText: "XXXX"
                 Layout.preferredWidth: computerIdInput.width
@@ -213,16 +251,16 @@ Dialog {
             }
 
             Text {
-                text: "miniutes"
+                text: "seconds"
                 font.pixelSize: 16
                 font.weight: 40
             }
         }
 
         Text {
-            id: invalidTimeUse
-            visible: (serviceNameInput.currentValue == "Hire computer" && (timeUseInput.text == "0" || timeUseInput.text == ""))
-            text: (timeUseInput.text == "0")?"0 not allowed!":"Time use can't be left empty!"
+            id: invalidTimeUsed
+            visible: (serviceName == "Hire computer" && (timeUsedInput.text == "0" || timeUsedInput.text == ""))
+            text: (timeUsedInput.text == "0")?"0 not allowed!":"Time use can't be left empty!"
             font.pixelSize: 16
             font.weight: 40
             color: "red"
@@ -231,7 +269,7 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             Layout.maximumHeight: 24
-            visible: (serviceNameInput.currentValue == "Order food")
+            visible: (serviceName == "Order food")
 
             Text {
                 text: "Food's ID"
@@ -264,7 +302,7 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             Layout.maximumHeight: 24
-            visible: (serviceNameInput.currentValue == "Order food")
+            visible: (serviceName == "Order food")
 
             Text {
                 text: "Number ordered"
@@ -286,8 +324,8 @@ Dialog {
 
         Text {
             id: invalidNumberOrdered
-            visible: root.isVisible()
-            text: root.errorWhat()
+            visible: root.checkNumberVisible()
+            text: root.checkNumberOrdered()
             color: "red"
             font.pixelSize: 16
             font.weight: 40

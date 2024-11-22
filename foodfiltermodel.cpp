@@ -6,15 +6,12 @@ FoodFilterModel::FoodFilterModel(QObject *parent)
 bool FoodFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
 
-    QString idData = "ID: " + sourceModel()->data(index, FoodModel::IdRole).toString();
-    QString nameData = "Name: " + sourceModel()->data(index, FoodModel::NameRole).toString();
-    QString remainData = "Remain: " + sourceModel()->data(index, FoodModel::RemainRole).toString();
-    QString costData = "Cost: " + sourceModel()->data(index, FoodModel::CostRole).toString();
+    QString data = "ID: " + sourceModel()->data(index, FoodModel::IdRole).toString();
+    data += " Name: " + sourceModel()->data(index, FoodModel::NameRole).toString();
+    data += " Remain: " + sourceModel()->data(index, FoodModel::RemainRole).toString();
+    data += " Cost: " + sourceModel()->data(index, FoodModel::CostRole).toString();
 
-    if (idData.contains(filterRegularExpression()) ||
-        nameData.contains(filterRegularExpression()) ||
-        remainData.contains(filterRegularExpression()) ||
-        costData.contains(filterRegularExpression())) {
+    if (data.contains(filterRegularExpression())) {
         return true;
     }
 

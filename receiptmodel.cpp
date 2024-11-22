@@ -1,4 +1,6 @@
 #include "receiptmodel.h"
+#include <QFile>
+#include <QTextStream>
 
 ReceiptModel::ReceiptModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -83,6 +85,11 @@ QHash<int, QByteArray> ReceiptModel::roleNames() const
     return result;
 }
 
+DoubleLinkedList<Service *> &ReceiptModel::serviceList(const int &receiptIndex)
+{
+    return m_receiptList[receiptIndex]->serviceList();
+}
+
 void ReceiptModel::add(const int& customerId, DoubleLinkedList<Service*> &serviceList)
 {
     beginInsertRows(QModelIndex(), m_receiptList.getSize(), m_receiptList.getSize());
@@ -112,6 +119,11 @@ Service *ReceiptModel::getService(const int &receiptIndex, const int &serviceInd
     return nullptr;
 }
 
+Receipt *ReceiptModel::getReceipt(const int &index)
+{
+    return m_receiptList[index];
+}
+
 int ReceiptModel::serviceNumber(const int &receiptIndex)
 {
     if (receiptIndex >= 0 && receiptIndex < m_receiptList.getSize()) {
@@ -123,5 +135,38 @@ int ReceiptModel::serviceNumber(const int &receiptIndex)
 
 void ReceiptModel::saveReceiptData(const char *path)
 {
+    QFile file(path);
 
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
+        std::cerr << "Cannot open file for writing: " << file.errorString().toStdString() << std::endl;
+        return;
+    }
+
+    QTextStream out(&file);
+    DoubleLinkedList<Service*> *ptServiceList;
+    for (auto it=m_receiptList.begin(); it!=m_receiptList.end(); ++it) {
+        if ((*it)->status()) {
+            out << "ID: " << (*it)->id(); Qt::endl(out);
+            out << "Created time: "  << (*it)->createdTime() << " Paid time: " << (*it)->paidTime(); Qt::endl(out);
+            out << "Customer's name: " << (*it)->customer()->firstName() + " " + (*it)->customer()->lastName();
+            out << " Customer's age: " << (*it)->customer()->age(); Qt::endl(out);
+            out << "List of services used: "; Qt::endl(out);
+            ptServiceList = &(*it)->serviceList();
+            for(auto sv=ptServiceList->begin(); sv!=ptServiceList->end(); ++sv) {
+                if ((*sv)->status()) {
+                    out << "Service's ID: " << (*sv)->id() << " Service's name: " << (*sv)->serviceName(); Qt::endl(out);
+                    if ((*sv)->serviceName() == "Hire computer") {
+                        HireComputer* hc = (HireComputer*)(*sv);
+                        out << "Computer's ID: " << hc->computer()->id() << " Time used: " << hc->timeUsed() << " Cost per hour: " << hc->cost(); Qt::endl(out);
+                    } else {
+                        OrderFood* of = (OrderFood*)(*sv);
+                        out << "Food's ID: " << of->food()->id() << " Number ordered: " << of->numberOrdered() << " Cost each: " << of->cost(); Qt::endl(out);
+                    }
+                }
+            }
+            out << "Total charge: " << (*it)->totalCharge(); Qt::endl(out);
+        }
+    }
+
+    file.close();
 }

@@ -102,7 +102,7 @@ Rectangle {
             id: contextMenu
             MenuItem {
                 text: "Change"
-                enabled: model.status != 1
+                enabled: model.status != 1 && model.status !=2
                 onTriggered: {
                     selectedItemIndex = SystemManager.computerModel.getIndexById(id)
                     computerChangeDialog.id = id
@@ -116,7 +116,7 @@ Rectangle {
             }
             MenuItem {
                 text: "Delete"
-                enabled: (model.status == 0 || model.status == 3)
+                enabled: model.status != 1 && model.status !=2
                 onTriggered: {
                     SystemManager.computerModel.remove(SystemManager.computerModel.getIndexById(id))
                 }

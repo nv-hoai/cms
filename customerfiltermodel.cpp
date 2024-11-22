@@ -6,23 +6,18 @@ CustomerFilterModel::CustomerFilterModel(QObject *parent)
 bool CustomerFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
 
-    QString idData = "ID: " + sourceModel()->data(index, CustomerModel::IdRole).toString();
-    QString firstNameData = "First name: " + sourceModel()->data(index, CustomerModel::FirstNameRole).toString();
-    QString lastNameData = "Last name: " + sourceModel()->data(index, CustomerModel::LastNameRole).toString();
-    QString ageData = "Age: " + sourceModel()->data(index, CustomerModel::AgeRole).toString();
+    QString data = "ID: " + sourceModel()->data(index, CustomerModel::IdRole).toString();
+    data += " First name: " + sourceModel()->data(index, CustomerModel::FirstNameRole).toString();
+    data += " Last name: " + sourceModel()->data(index, CustomerModel::LastNameRole).toString();
+    data += " Age: " + sourceModel()->data(index, CustomerModel::AgeRole).toString();
     bool gender = sourceModel()->data(index, CustomerModel::GenderRole).toBool();
-    QString genderData = "Gender: ";
-    genderData.append(((gender)?"Male":"Female"));
+    data += " Gender: ";
+    data.append(((gender)?"Male":"Female"));
     int status = sourceModel()->data(index, CustomerModel::StatusRole).toInt();
-    QString statusData = "Status: ";
-    statusData.append(((!status)?"Not using any service":(status==1)?"Using service":"Registering"));
+    data += " Status: ";
+    data.append(((!status)?"Not using any service":(status==1)?"Using service":"Registering"));
 
-    if (idData.contains(filterRegularExpression()) ||
-        firstNameData.contains(filterRegularExpression()) ||
-        lastNameData.contains(filterRegularExpression()) ||
-        ageData.contains(filterRegularExpression()) ||
-        genderData.contains(filterRegularExpression()) ||
-        statusData.contains(filterRegularExpression())) {
+    if (data.contains(filterRegularExpression())) {
         return true;
     }
 

@@ -3,6 +3,8 @@
 
 #include <QAbstractListModel>
 #include "doublelinkedlist.h"
+#include "hirecomputer.h"
+#include "orderfood.h"
 #include "receipt.h"
 
 class ReceiptModel : public QAbstractListModel
@@ -32,11 +34,14 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     virtual QHash<int, QByteArray> roleNames() const override;
+
+    DoubleLinkedList<Service*>& serviceList(const int& receiptIndex);
 public slots:
     void add(const int& customerId, DoubleLinkedList<Service*> &serviceList);
     void remove(const int& index);
 
     Service* getService(const int& receiptIndex, const int& serviceIndex);
+    Receipt* getReceipt(const int& index);
     int serviceNumber(const int& receiptIndex);
 
     void saveReceiptData(const char* path);

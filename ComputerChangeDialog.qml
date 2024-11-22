@@ -157,8 +157,7 @@ Dialog {
                 valueRole: "value"
                 model: [
                     { value: 0, text: "Idle" },
-                    { value: 1, text: "Busy" },
-                    { value: 2, text: "Cracked" }
+                    { value: 3, text: "Cracked" }
                 ]
             }
         }

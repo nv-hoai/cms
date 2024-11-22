@@ -11,27 +11,24 @@ class HireComputer : public Service
     Q_OBJECT
     QML_ELEMENT
     Q_PROPERTY(Computer* computer READ computer WRITE setComputer NOTIFY computerChanged)
-    Q_PROPERTY(int timeUse READ timeUse WRITE setTimeUse NOTIFY timeUseChanged)
+    Q_PROPERTY(int timeUsed READ timeUsed WRITE setTimeUsed NOTIFY timeUsedChanged)
 public:
     explicit HireComputer(QObject *parent = nullptr);
 
-    int timeUse() const;
-    void setTimeUse(int newTimeUse);
+    int timeUsed() const;
+    void setTimeUsed(int newTimeUsed);
 
     Computer *computer() const;
     void setComputer(Computer *newComputer);
 
     int totalCost() const override;
-
 signals:
-    void startTimeChanged();
-    void timeUseChanged();
+    void timeUsedChanged();
     void computerChanged();
 
 private:
-    QString m_startTime;
     Computer *m_computer;
-    int m_timeUse;
+    int m_timeUsed;
 };
 
 #endif // HIRECOMPUTER_H

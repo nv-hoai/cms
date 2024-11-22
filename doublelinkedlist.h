@@ -93,7 +93,7 @@ public:
             current->next->prev = current->prev;
         }
 
-        delete current;
+        // delete current;
         size--;
     }
 

@@ -1,6 +1,6 @@
 #include <QFile>
 #include <QTextStream>
-#include <QDir>
+#include <QDate>
 #include "systemmanager.h"
 
 using namespace std;
@@ -24,6 +24,9 @@ SystemManager::SystemManager(QObject *parent)
     loadEmployeeData("../../data/employee.txt");
     loadFoodData("../../data/food.txt");
     loadServiceData("../../data/service.txt");
+    loadRevenues("../../data/revenues.txt");
+
+    systemFiles[5] = "../../data/receipt.txt";
 
     m_computerFilterModel->setSourceModel(m_computerModel);
     m_customerFilterModel->setSourceModel(m_customerModel);
@@ -203,8 +206,10 @@ void SystemManager::loadServiceData(const char* path)
         if (fields[0] == "Order food") {
             m_serviceModel->addOrderFood(fields[0], m_customerModel->getCustomer(fields[1].toInt()),
                                          m_foodModel->getFood(fields[2].toInt()), fields[3].toInt(), fields[4].toInt());
-            Food* food = m_foodModel->getFood(fields[2].toInt());
-            food->setRemain(food->remain() - fields[3].toInt());
+            if (fields[4].toInt()) {
+                Food* food = m_foodModel->getFood(fields[2].toInt());
+                food->setRemain(food->remain() - fields[3].toInt());
+            }
         }
         if (fields[4].toInt()) {
             m_customerModel->getCustomer(fields[1].toInt())->increaseNumberService();
@@ -217,45 +222,46 @@ void SystemManager::loadServiceData(const char* path)
     file.close();
 }
 
+void SystemManager::loadRevenues(const char *path)
+{
+    QFile file(path);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        std::cerr << "Cannot open file for reading: " << file.errorString().toStdString() << std::endl;
+        return;
+    }
+
+    QTextStream in(&file);
+    QString lastDay = in.readLine();
+
+    if (lastDay == QDate::currentDate().toString("dd/MM/yyyy"))
+        in >> revenues[0];
+    else
+        revenues[0] = 0;
+
+    for (int i=1; i<7; i++)
+        in >> revenues[i];
+
+    revenues;
+
+    file.close();
+}
+
 void SystemManager::createReceipt(const int &customerId)
 {
     m_receiptModel->add(customerId, m_serviceModel->getServiceList());
 }
 
-void SystemManager::removeReceipt(const int &receiptIndex, const bool& status)
+void SystemManager::payReceipt(const int &receiptIndex)
 {
-    if (status) {
-        Service* service = nullptr;
-        int numberService = m_receiptModel->serviceNumber(receiptIndex);
-        for(int i=0; i<numberService; i++) {
-            service = m_receiptModel->getService(receiptIndex, i);
-            removeService(service->id());
-        }
-    }
-    m_receiptModel->remove(receiptIndex);
+    DoubleLinkedList<Service*>& serviceList = m_receiptModel->serviceList(receiptIndex);
+    for(auto it=serviceList.begin(); it!=serviceList.end(); ++it)
+        removeService((*it)->id());
+    revenues[0] += m_receiptModel->getReceipt(receiptIndex)->totalCharge();
+    emit revenuesChanged();
 }
 
 void SystemManager::confirmService(const int &serviceId)
-{
-    Service *service = m_serviceModel->getService(serviceId);
-    HireComputer* hc = nullptr;
-    // OrderFood* of = nullptr;
-    if (service->serviceName() == "Hire computer")
-        hc = (HireComputer*)service;
-    // if (service->serviceName() == "Order food")
-    //     of = (OrderFood*)service;
-
-    Customer* customer = m_customerModel->getCustomer(service->customer()->id());
-    customer->increaseNumberService();
-    m_customerModel->setStatus(m_customerModel->getIndexById(customer->id()), 1);
-
-    if (hc) {
-        m_computerModel->setStatus(m_computerModel->getIndexById(hc->computer()->id()), 1);
-    }
-    m_serviceModel->setStatus(m_serviceModel->getIndexById(service->id()), 1);
-}
-
-void SystemManager::removeService(const int &serviceId)
 {
     Service *service = m_serviceModel->getService(serviceId);
     HireComputer* hc = nullptr;
@@ -265,15 +271,40 @@ void SystemManager::removeService(const int &serviceId)
     if (service->serviceName() == "Order food")
         of = (OrderFood*)service;
 
-    if (hc) {
-        m_computerModel->setStatus(m_computerModel->getIndexById(hc->computer()->id()), 0);
+
+    if (of) {
+        if (m_foodModel->getFood(of->food()->id())) {
+            Food* food = of->food();
+            m_foodModel->setRemain(m_foodModel->getIndexById(food->id()), food->remain()-of->numberOrdered());
+        } else {
+            removeService(serviceId);
+            return;
+        }
     }
 
-    if (!service->status()) {
-        if (of) {
-            Food* food = m_foodModel->getFood(of->food()->id());
-            m_foodModel->setRemain(m_foodModel->getIndexById(food->id()), food->remain() + of->numberOrdered());
-        }
+    Customer* customer = m_customerModel->getCustomer(service->customer()->id());
+    customer->increaseNumberService();
+    m_customerModel->setStatus(m_customerModel->getIndexById(customer->id()), 1);
+
+    if (hc) {
+        m_computerModel->setStatus(m_computerModel->getIndexById(hc->computer()->id()), 1);
+    }
+
+    m_serviceModel->setStatus(m_serviceModel->getIndexById(service->id()), 1);
+}
+
+void SystemManager::removeService(const int &serviceId)
+{
+    Service *service = m_serviceModel->getService(serviceId);
+    HireComputer* hc = nullptr;
+    // OrderFood* of = nullptr;
+    if (service->serviceName() == "Hire computer")
+        hc = (HireComputer*)service;
+    // if (service->serviceName() == "Order food")
+    //     of = (OrderFood*)service;
+
+    if (hc) {
+        m_computerModel->setStatus(m_computerModel->getIndexById(hc->computer()->id()), 0);
     }
 
     if (service->status()) {
@@ -281,6 +312,11 @@ void SystemManager::removeService(const int &serviceId)
     }
     m_customerModel->setStatus(m_customerModel->getIndexById(service->customer()->id()), 0);
     m_serviceModel->remove(m_serviceModel->getIndexById(service->id()));
+}
+
+int SystemManager::getRevenue(const int &index)
+{
+    return revenues[index];
 }
 
 ComputerFilterModel *SystemManager::computerFilterModel() const
@@ -315,20 +351,25 @@ void SystemManager::saveComputerData()
 
 void SystemManager::saveCustomerData()
 {
-
+    m_customerModel->saveCustomerData(systemFiles[1]);
 }
 
 void SystemManager::saveEmployeeData()
 {
-
+    m_employeeModel->saveEmployeeData(systemFiles[2]);
 }
 
 void SystemManager::saveFoodData()
 {
-
+    m_foodModel->saveFoodData(systemFiles[3]);
 }
 
 void SystemManager::saveServiceData()
 {
+    m_serviceModel->saveServiceData(systemFiles[4]);
+}
 
+void SystemManager::saveReceiptData()
+{
+    m_receiptModel->saveReceiptData(systemFiles[5]);
 }

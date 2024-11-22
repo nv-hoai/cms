@@ -145,7 +145,7 @@ void ComputerModel::saveComputerData(const char *path)
         out << (*it)->cpu() << ";";
         out << (*it)->ram() << ";";
         out << (*it)->position() << ";";
-        out << (((*it)->status()!=2)?0:2) << ";";
+        out << (((*it)->status()!=3)?0:3) << ";";
         out << (*it)->cost(); Qt::endl(out);
     }
 

@@ -2,20 +2,20 @@
 #include <cmath>
 
 HireComputer::HireComputer(QObject *parent)
-    : Service(parent), m_computer(nullptr)
+    : Service(parent), m_computer(nullptr), m_timeUsed(0)
 {}
 
-int HireComputer::timeUse() const
+int HireComputer::timeUsed() const
 {
-    return m_timeUse;
+    return m_timeUsed;
 }
 
-void HireComputer::setTimeUse(int newTimeUse)
+void HireComputer::setTimeUsed(int newTimeUsed)
 {
-    if (m_timeUse == newTimeUse)
+    if (m_timeUsed == newTimeUsed)
         return;
-    m_timeUse = newTimeUse;
-    emit timeUseChanged();
+    m_timeUsed = newTimeUsed;
+    emit timeUsedChanged();
 }
 
 Computer *HireComputer::computer() const
@@ -33,5 +33,5 @@ void HireComputer::setComputer(Computer *newComputer)
 
 int HireComputer::totalCost() const
 {
-    return ceil((cost()*(m_timeUse/60)));
+    return ceil((cost()*(m_timeUsed/3600)));
 }

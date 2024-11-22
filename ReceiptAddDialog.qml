@@ -6,10 +6,11 @@ import prototype 1.0
 
 Dialog {
     id: root
-    width: 250
+    width: 350
     height: 150
     anchors.centerIn: parent;
 
+    property int customerId: 0;
     property var customer: null;
 
     function isSaveAllowed() {
@@ -17,6 +18,10 @@ Dialog {
     }
 
     onOpened: {
+        if (customerId) {
+            customerIdInput.value = customerId
+            customerId = 0
+        }
         customer = SystemManager.customerModel.getCustomer(customerIdInput.value);
     }
 
@@ -24,12 +29,18 @@ Dialog {
         receiveReceiptData(customerIdInput.value)
     }
 
+    header: Text {
+        text: "Choose the customer to create receipt"
+        font.pixelSize: 12
+        font.weight: 40
+    }
+
     function errorWhat() {
         if (!customer)
             return "Invalid customer id"
         if (customer)
-            if (!customer.status)
-                return "This customer don't use any service!"
+            if (customer.status != 1)
+                return "This customer doesn't use any service!"
         return "";
     }
 
@@ -53,6 +64,12 @@ Dialog {
                 onValueModified: {
                     customer = SystemManager.customerModel.getCustomer(customerIdInput.value);
                 }
+            }
+
+            Text {
+                text: (customer)?customer.firstName+ " " + customer.lastName:""
+                font.pixelSize: 16
+                font.weight: 40
             }
         }
 

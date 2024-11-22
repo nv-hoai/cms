@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_PREFIX_PATH "C:/Qt/6.8.0/mingw_64")
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Quick Qml Gui QuickControls2 Svg Charts)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Quick Qml Gui QuickControls2 Svg Charts Widgets)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -69,6 +69,8 @@ qt_add_qml_module(appPBL2
         data/employee.txt
         data/food.txt
         data/service.txt
+        data/receipt.txt
+        data/revenues.txt
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -90,6 +92,7 @@ target_link_libraries(appPBL2 PRIVATE
     Qt6::Quick
     Qt6::Qml
     Qt6::QuickControls2
+    Qt6::Widgets
     Qt6::Svg
     Qt6::Charts
 )

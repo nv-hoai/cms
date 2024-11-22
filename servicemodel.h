@@ -20,7 +20,7 @@ public:
         ServiceNameRole,
         CustomerRole,
         ComputerRole,
-        TimeUseRole,
+        TimeUsedRole,
         FoodRole,
         NumberOrderedRole,
         StatusRole,

@@ -1,3 +1,5 @@
+#include <QFile>
+#include <QTextStream>
 #include "servicemodel.h"
 
 ServiceModel::ServiceModel(QObject *parent)
@@ -34,8 +36,8 @@ QVariant ServiceModel::data(const QModelIndex &index, int role) const
             return QVariant::fromValue(sv->customer());
         case ComputerRole:
             return QVariant::fromValue(hc->computer());
-        case TimeUseRole:
-            return hc->timeUse();
+        case TimeUsedRole:
+            return hc->timeUsed();
         case FoodRole:
             return QVariant::fromValue(of->food());
         case NumberOrderedRole:
@@ -83,9 +85,9 @@ bool ServiceModel::setData(const QModelIndex &index, const QVariant &value, int 
         previousValue = QVariant::fromValue(hc->computer());
         hc->setComputer(value.value<Computer*>());
         break;
-    case TimeUseRole:
-        previousValue = hc->timeUse();
-        hc->setTimeUse(value.toInt());
+    case TimeUsedRole:
+        previousValue = hc->timeUsed();
+        hc->setTimeUsed(value.toInt());
         break;
     case FoodRole:
         previousValue = QVariant::fromValue(of->food());
@@ -120,7 +122,7 @@ QHash<int, QByteArray> ServiceModel::roleNames() const
     result[ServiceNameRole] = "serviceName";
     result[CustomerRole] = "customer";
     result[ComputerRole] = "computer";
-    result[TimeUseRole] = "timeUse";
+    result[TimeUsedRole] = "timeUsed";
     result[FoodRole] = "food";
     result[NumberOrderedRole] = "numberOrdered";
     result[StatusRole] = "status";
@@ -156,10 +158,36 @@ int ServiceModel::getIndexById(const int &id)
 
 void ServiceModel::saveServiceData(const char *path)
 {
+    QFile file(path);
 
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        std::cerr << "Cannot open file for writing: " << file.errorString().toStdString() << std::endl;
+        return;
+    }
+
+    QTextStream out(&file);
+    for (auto it=m_serviceList.begin(); it!=m_serviceList.end(); ++it) {
+        out << (*it)->serviceName() << ";";
+        out << (*it)->customer()->id() << ";";
+        if ((*it)->serviceName() == "Hire computer") {
+            HireComputer* hc = (HireComputer*)(*it);
+            out << hc->computer()->id() << ";";
+            out << hc->timeUsed() << ";";
+            out << int((*it)->status()); Qt::endl(out);
+        }
+
+        if ((*it)->serviceName() == "Order food") {
+            OrderFood* of = (OrderFood*)(*it);
+            out << of->food()->id() << ";";
+            out << of->numberOrdered() << ";";
+            out << int((*it)->status()); Qt::endl(out);
+        }
+    }
+
+    file.close();
 }
 
-void ServiceModel::addHireComputer(const QString &serviceName, Customer* customer, Computer* computer, const int &timeUse, const int& status)
+void ServiceModel::addHireComputer(const QString &serviceName, Customer* customer, Computer* computer, const int &timeUsed, const int& status)
 {
     beginInsertRows(QModelIndex(), m_serviceList.getSize(), m_serviceList.getSize());
     HireComputer* hc = new HireComputer(this);
@@ -167,7 +195,7 @@ void ServiceModel::addHireComputer(const QString &serviceName, Customer* custome
     hc->setStatus(status);
     hc->setCustomer(customer);
     hc->setComputer(computer);
-    hc->setTimeUse(timeUse);
+    hc->setTimeUsed(timeUsed);
     hc->setCost(computer->cost());
     m_serviceList.append(hc);
     endInsertRows();
@@ -193,7 +221,8 @@ void ServiceModel::remove(const int &index)
         beginRemoveRows(QModelIndex(), index, index);
         Service* toRemove = m_serviceList[index];
         m_serviceList.remove(toRemove);
-        toRemove->deleteLater();
+        if (toRemove->status() == 0)
+            toRemove->deleteLater();
         endRemoveRows();
     }
 }
@@ -219,7 +248,7 @@ void ServiceModel::setComputer(const int &index, Computer* computer)
 void ServiceModel::setTimeUse(const int &index, const int &timeUse)
 {
     QModelIndex modelIndex = createIndex(index, 0);
-    setData(modelIndex, timeUse, TimeUseRole);
+    setData(modelIndex, timeUse, TimeUsedRole);
 }
 
 void ServiceModel::setFood(const int &index, Food* food)

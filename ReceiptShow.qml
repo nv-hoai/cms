@@ -129,12 +129,13 @@ Rectangle {
                 onTriggered: {
                     model.status = 1
                     model.paidTime = 1
+                    SystemManager.payReceipt(index);
                 }
             }
             MenuItem {
                 text: "Delete"
                 onTriggered: {
-                    SystemManager.removeReceipt(index, model.status);
+                    SystemManager.receiptModel.remove(index)
                 }
             }
         }

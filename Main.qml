@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtCharts
 import Model 1.0
 import prototype 1.0
 
@@ -13,6 +14,28 @@ ApplicationWindow {
     color: "white"
 
     property int selectedItemIndex: -1
+    property var revenues: []
+    property var days: []
+
+    Component.onCompleted: {
+        let currentDate = new Date();
+        for (let i = 6; i >= 0; i--) {
+            let pastDate = new Date();
+            pastDate.setDate(currentDate.getDate() - i);
+            days.push(pastDate.toLocaleDateString(Qt.locale("en_US"), "dddd"));
+        }
+
+        for (let i=0; i<7; i++)
+            revenues.push(SystemManager.getRevenue(6-i));
+    }
+
+    Connections {
+        target: SystemManager
+        function onRevenuesChanged () {
+            revenueSeries.replace(6, revenues[6], 6, SystemManager.getRevenue(0));
+            revenues[6] = SystemManager.getRevenue(0);
+        }
+    }
 
     ComputerAddDiaglog {
         id: computerAddDialog
@@ -89,10 +112,10 @@ ApplicationWindow {
     onReceiveServiceData: (serviceName, customerId, computerId, timeUse, foodId, numberOrdered) => {
         if (serviceName == "Hire computer")
             SystemManager.serviceModel.addHireComputer(serviceName, SystemManager.customerModel.getCustomer(customerId),
-                                                  SystemManager.computerModel.getComputer(computerId), timeUse);
+                                                  SystemManager.computerModel.getComputer(computerId), timeUse, 0);
         if (serviceName == "Order food")
             SystemManager.serviceModel.addOrderFood(serviceName, SystemManager.customerModel.getCustomer(customerId),
-                                                  SystemManager.foodModel.getFood(foodId), numberOrdered);
+                                                  SystemManager.foodModel.getFood(foodId), numberOrdered, 0);
     }
 
     onReceiveFoodData: (name, remain, cost, imageSource) => {
@@ -151,8 +174,8 @@ ApplicationWindow {
 
     RowLayout {
         id: toolBar
-        Layout.fillWidth: true
-        Layout.minimumHeight: logo.implicitHeight
+        width: parent.width
+        height: logo.implicitHeight
 
         Rectangle {
             id: logo
@@ -169,11 +192,39 @@ ApplicationWindow {
         }
 
         Text {
-            Layout.fillWidth: true
             text: "Cybercafe Management System"
             color: "black"
             font.pixelSize: 16
             font.weight: 40
+        }
+
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Rectangle {
+                color: "white"
+                anchors.right: parent.right
+                anchors.rightMargin: 16
+                implicitWidth: clockDisplay.width
+                implicitHeight: toolBar.height
+
+
+                Text {
+                    id: clockDisplay
+                    text: Qt.formatTime(new Date(), "hh:mm:ss")
+                    font.pixelSize: 32
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Timer {
+                    interval: 1000
+                    running: true
+                    repeat: true
+                    onTriggered: {
+                       clockDisplay.text = Qt.formatTime(new Date(), "hh:mm:ss")
+                    }
+                }
+            }
         }
     }
 
@@ -252,7 +303,7 @@ ApplicationWindow {
 
 
                 TextButton {
-                    text: "Analysis"
+                    text: "Revenues"
                     Layout.fillWidth: true
                     implicitHeight: sideBar.width/6
                     mouseArea.onClicked: {
@@ -266,7 +317,7 @@ ApplicationWindow {
                 }
 
                 TextButton {
-                    text: "Settings"
+                    text: "About"
                     Layout.fillWidth: true
                     implicitHeight: sideBar.width/6
                     mouseArea.onClicked: {
@@ -332,6 +383,11 @@ ApplicationWindow {
                 newMouseArea.onClicked: {
                     customerAddDialog.open();
                 }
+
+
+                saveMouseArea.onClicked: {
+                    SystemManager.saveCustomerData();
+                }
             }
 
             CustomPage {
@@ -352,6 +408,11 @@ ApplicationWindow {
 
                 newMouseArea.onClicked: {
                     employeeAddDialog.open();
+                }
+
+
+                saveMouseArea.onClicked: {
+                    SystemManager.saveEmployeeData();
                 }
             }
 
@@ -374,6 +435,11 @@ ApplicationWindow {
                 newMouseArea.onClicked: {
                     foodAddDialog.open();
                 }
+
+
+                saveMouseArea.onClicked: {
+                    SystemManager.saveFoodData();
+                }
             }
 
             CustomPage {
@@ -393,7 +459,13 @@ ApplicationWindow {
                 }
 
                 newMouseArea.onClicked: {
+                    serviceAddDialog.serviceName = "Hire computer"
                     serviceAddDialog.open();
+                }
+
+
+                saveMouseArea.onClicked: {
+                    SystemManager.saveServiceData();
                 }
             }
 
@@ -415,20 +487,88 @@ ApplicationWindow {
                 newMouseArea.onClicked: {
                     receiptAddDialog.open();
                 }
+
+                saveMouseArea.onClicked: {
+                    SystemManager.saveReceiptData();
+                }
             }
 
-            CustomPage {
-                id: alysisPage
-                headerText: "Analysis"
-                headerDetails: "Chart:"
+            Page {
+                id: revenuesPage
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
-                searchBar.visible: false
+                ChartView {
+                    anchors.fill: parent
+                    antialiasing: true
+                    title: "Revenue for the Past 7 Days"
+                    legend.visible: false
+
+                    LineSeries {
+                        id: revenueSeries
+                        name: "Revenue"
+                        color: "blue"
+                        pointLabelsVisible: true
+                        pointLabelsFormat: "@yPoint"
+                        pointLabelsClipping: false
+                        pointsVisible: true
+
+                        XYPoint { x: 0; y: 0}
+                        XYPoint { x: 1; y: 0}
+                        XYPoint { x: 2; y: 0}
+                        XYPoint { x: 3; y: 0}
+                        XYPoint { x: 4; y: 0}
+                        XYPoint { x: 5; y: 0}
+                        XYPoint { x: 6; y: 0}
+
+                        axisX: xAxis
+                        axisY: yAxis
+
+                        Component.onCompleted: {
+                            for (let i=0; i<7; i++) {
+                                revenueSeries.replace(i, 0, i, mainWindow.revenues[i]);
+                            }
+                        }
+                    }
+
+                    CategoryAxis {
+                        id: xAxis
+                        Component.onCompleted: {
+                            for (let i=0; i<7; i++) {
+                                xAxis.append(mainWindow.days[i], i);
+                            }
+                        }
+                    }
+
+                    ValueAxis {
+                        id: yAxis
+                        min: 0
+                        max: 350
+                        titleText: "Revenue (USD)"
+                    }
+                }
             }
 
-            CustomPage {
-                id: settingPage
-                headerText: "Settings"
-                headerDetails: "Available settings can be change"
+            Page {
+                id: aboutUs
+                anchors.fill: parent
+                Text {
+                    id: aboutUsHeader
+                    Layout.alignment: Qt.AlignTop
+                    text: "About us"
+                    font.pixelSize: 32
+                    font.weight: 40
+                }
+
+                Text {
+                    text: "<a href='https://github.com/nv-hoai/cms'>Click here if you want to see more about the project</a>"
+                    color: "blue"
+                    textFormat: Text.RichText
+                    onLinkActivated: {
+                        Qt.openUrlExternally(link)
+                    }
+                    anchors.top: aboutUsHeader.bottom
+                }
             }
         }
     }

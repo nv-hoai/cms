@@ -6,27 +6,19 @@ EmployeeFilterModel::EmployeeFilterModel(QObject *parent)
 bool EmployeeFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
 
-    QString idData = "ID: " + sourceModel()->data(index, EmployeeModel::IdRole).toString();
-    QString firstNameData = "First name: " + sourceModel()->data(index, EmployeeModel::FirstNameRole).toString();
-    QString lastNameData = "Last name: " + sourceModel()->data(index, EmployeeModel::LastNameRole).toString();
-    QString ageData = "Age: " + sourceModel()->data(index, EmployeeModel::AgeRole).toString();
+    QString data = "ID: " + sourceModel()->data(index, EmployeeModel::IdRole).toString();
+    data += " First name: " + sourceModel()->data(index, EmployeeModel::FirstNameRole).toString();
+    data += " Last name: " + sourceModel()->data(index, EmployeeModel::LastNameRole).toString();
+    data += " Age: " + sourceModel()->data(index, EmployeeModel::AgeRole).toString();
     bool gender = sourceModel()->data(index, EmployeeModel::GenderRole).toBool();
-    QString genderData = "Gender: ";
-    genderData.append(((gender)?"Male":"Female"));
-    QString positionData = "Position: " + sourceModel()->data(index, EmployeeModel::PositionRole).toString();
-    QString workedDaysData = "Worked days: " + sourceModel()->data(index, EmployeeModel::WorkedDaysRole).toString();
-    QString timeWorkData = "Time work: " + sourceModel()->data(index, EmployeeModel::TimeWorkRole).toString();
-    QString baseSalaryData = "Base salary: " + sourceModel()->data(index, EmployeeModel::BaseSalaryRole).toString();
+    data += " Gender: ";
+    data.append(((gender)?"Male":"Female"));
+    data += " Position: " + sourceModel()->data(index, EmployeeModel::PositionRole).toString();
+    data += " Worked days: " + sourceModel()->data(index, EmployeeModel::WorkedDaysRole).toString();
+    data += " Time work: " + sourceModel()->data(index, EmployeeModel::TimeWorkRole).toString();
+    data += " Base salary: " + sourceModel()->data(index, EmployeeModel::BaseSalaryRole).toString();
 
-    if (idData.contains(filterRegularExpression()) ||
-        firstNameData.contains(filterRegularExpression()) ||
-        lastNameData.contains(filterRegularExpression()) ||
-        ageData.contains(filterRegularExpression()) ||
-        genderData.contains(filterRegularExpression()) ||
-        positionData.contains(filterRegularExpression()) ||
-        workedDaysData.contains(filterRegularExpression()) ||
-        timeWorkData.contains(filterRegularExpression()) ||
-        baseSalaryData.contains(filterRegularExpression())) {
+    if (data.contains(filterRegularExpression())) {
         return true;
     }
 

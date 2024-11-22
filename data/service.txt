@@ -1,6 +1,5 @@
-Hire computer;1;1;120;1
-Hire computer;2;2;120;0
+Hire computer;1;1;7200;1
+Hire computer;2;2;3600;1
 Hire computer;3;3;120;0
 Order food;1;1;2;1
 Order food;2;2;2;0
-Order food;3;3;2;0

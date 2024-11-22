@@ -35,6 +35,8 @@ public:
     void setPaidTime(const QString &newPaidTime);
 
     void receiveServiceList(const int& customerId, DoubleLinkedList<Service*> &serviceList);
+
+    DoubleLinkedList<Service*>& serviceList();
 signals:
     void statusChanged();
     void totalChargeChanged();
@@ -49,6 +51,7 @@ private:
     int m_id;
     bool m_status;
 
+    DoubleLinkedList<int> map;
     DoubleLinkedList<Service*> m_serviceList;
     static int receiptCount;
 

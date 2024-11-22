@@ -10,7 +10,6 @@
 #include "servicefiltermodel.h"
 #include "receiptmodel.h"
 
-
 class SystemManager : public QObject
 {
     Q_OBJECT
@@ -41,6 +40,7 @@ public:
     void loadEmployeeData(const char* path);
     void loadFoodData(const char* path);
     void loadServiceData(const char* path);
+    void loadRevenues(const char* path);
 
     ComputerFilterModel *computerFilterModel() const;
     CustomerFilterModel *customerFilterModel() const;
@@ -49,17 +49,20 @@ public:
     ServiceFilterModel *serviceFilterModel() const;
 
 signals:
-    //signals
+    void revenuesChanged();
 public slots:
     void saveComputerData();
     void saveCustomerData();
     void saveEmployeeData();
     void saveFoodData();
     void saveServiceData();
+    void saveReceiptData();
     void createReceipt(const int& customerId);
-    void removeReceipt(const int& receiptIndex, const bool& status);
+    void payReceipt(const int& receiptIndex);
     void confirmService(const int& serviceId);
     void removeService(const int& serviceId);
+
+    int getRevenue(const int& index);
 private:
     ComputerModel* m_computerModel;
     CustomerModel* m_customerModel;
@@ -73,7 +76,8 @@ private:
     FoodFilterModel *m_foodFilterModel;
     ServiceFilterModel *m_serviceFilterModel;
 
-    const char* systemFiles[5];
+    int revenues[8];
+    const char* systemFiles[6];
 };
 
 #endif // SYSTEMMANAGER_H

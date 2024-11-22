@@ -1,10 +1,10 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include "systemmanager.h"
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     SystemManager* systemManager = new SystemManager(&app);
     qmlRegisterSingletonInstance("Model", 1, 0, "SystemManager", systemManager);
