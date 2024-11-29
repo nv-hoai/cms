@@ -15,6 +15,18 @@ Rectangle {
     property color drectangleColor: (model.status == 0)?"#CCCCCC":"#66BB6A"
     property int receiptIndex: model.index
 
+    function formatTimeFromSeconds(seconds) {
+        var hours = Math.floor(seconds / 3600);
+        var minutes = Math.floor((seconds % 3600) / 60);
+        var secs = seconds % 60;
+
+        var hoursStr = hours < 10 ? "0" + hours : "" + hours;
+        var minutesStr = minutes < 10 ? "0" + minutes : "" + minutes;
+        var secondsStr = secs < 10 ? "0" + secs : "" + secs;
+
+        return hoursStr + ":" + minutesStr + ":" + secondsStr;
+    }
+
     GridLayout {
         anchors.fill: parent
         anchors.centerIn: parent
@@ -75,6 +87,14 @@ Rectangle {
                 property var service: receiptPage.gridModel.getService(receiptIndex, index)
                 Layout.leftMargin: (index%2)?0:32
                 Layout.columnSpan: (index == rp.count-1 && index%2 == 0)?2:1
+
+                Component.onCompleted: {
+                    if (service.serviceName == "Hire computer")
+                        service = receiptPage.gridModel.toHireComputer(service);
+                    else
+                        service = receiptPage.gridModel.toOrderFood(service);
+                }
+
                 Text {
                     text: "Service's ID: " + service.id
                     font.pixelSize: 16
@@ -85,6 +105,56 @@ Rectangle {
                     text: "Service name: " + service.serviceName
                     font.pixelSize: 16
                     font.weight: 40
+                }
+
+                Text {
+                    visible: service.serviceName == "Hire computer"
+                    font.pixelSize: 16
+                    font.weight: 40
+                    Component.onCompleted: {
+                        if (visible) {
+                            text = Qt.binding(function() {
+                                return "Computer's ID: " + service.computer.id
+                            })
+                        }
+                    }
+                }
+
+                Text {
+                    visible: service.serviceName == "Hire computer"
+                    font.pixelSize: 16
+                    font.weight: 40
+                    Component.onCompleted: {
+                        if (visible) {
+                            text = "Time used: " + root.formatTimeFromSeconds(service.timeUsed);
+                        }
+                    }
+                }
+
+                Text {
+                    visible: service.serviceName == "Order food"
+                    font.pixelSize: 16
+                    font.weight: 40
+                    Component.onCompleted: {
+                        if (visible) {
+                            text = Qt.binding( function () {
+                                return "Food's name: " + service.food.name
+                            })
+                        }
+                    }
+                }
+
+                Text {
+                    visible: service.serviceName == "Order food"
+                    font.pixelSize: 16
+                    font.weight: 40
+                    Component.onCompleted: {
+                        if (visible) {
+                            text = Qt.binding( function () {
+                                return "Number Ordered: " + service.numberOrdered
+                            })
+                        }
+                    }
                 }
 
                 Text {
@@ -126,6 +196,7 @@ Rectangle {
             MenuItem {
                 text: "Pay"
                 enabled: model.status == 0
+                opacity: enabled ? 1.0 : 0.5
                 onTriggered: {
                     model.status = 1
                     model.paidTime = 1

@@ -103,6 +103,7 @@ Rectangle {
             MenuItem {
                 text: "Change"
                 enabled: model.status != 1
+                opacity: enabled ? 1.0 : 0.5
                 onTriggered: {
                     selectedItemIndex = SystemManager.customerModel.getIndexById(id)
                     customerChangeDialog.id = id
@@ -116,6 +117,7 @@ Rectangle {
             MenuItem {
                 text: "Delete"
                 enabled: model.status == 0
+                opacity: enabled ? 1.0 : 0.5
                 onTriggered: {
                     SystemManager.customerModel.remove(SystemManager.customerModel.getIndexById(id))
                 }

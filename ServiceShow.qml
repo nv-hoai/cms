@@ -176,6 +176,7 @@ Rectangle {
                 id: confirmButton
                 text: "Confirm"
                 enabled: model.status == 0
+                opacity: enabled ? 1.0 : 0.5
                 onTriggered: {
                     SystemManager.confirmService(id)
                     contextMenu.removeItem(changeButton)
@@ -217,6 +218,7 @@ Rectangle {
                 id: changeButton
                 text: "Change"
                 enabled: model.status == 0
+                opacity: enabled ? 1.0 : 0.5
                 onTriggered: {
                     selectedItemIndex = SystemManager.serviceModel.getIndexById(id)
                     serviceChangeDialog.id = id
@@ -242,6 +244,7 @@ Rectangle {
                 id: deleteButton
                 text: "Delete"
                 enabled: model.status == 0
+                opacity: enabled ? 1.0 : 0.5
                 onTriggered: {
                     SystemManager.removeService(id)
                 }
@@ -251,6 +254,7 @@ Rectangle {
                 id: orderFoodButton
                 text: "Order food"
                 enabled: model.status == 1
+                opacity: enabled ? 1.0 : 0.5
                 onTriggered: {
                     serviceAddDialog.serviceName = "Order food"
                     serviceAddDialog.customerId = customer.id
@@ -263,6 +267,7 @@ Rectangle {
                 id: payBill
                 text: "Create receipt"
                 enabled: model.status == 1
+                opacity: enabled ? 1.0 : 0.5
                 onTriggered: {
                     swipeView.currentIndex = 5
                     receiptAddDialog.customerId = customer.id

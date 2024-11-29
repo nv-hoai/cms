@@ -41,6 +41,8 @@ public slots:
     void remove(const int& index);
 
     Service* getService(const int& receiptIndex, const int& serviceIndex);
+    HireComputer* toHireComputer(Service* sv);
+    OrderFood* toOrderFood(Service* sv);
     Receipt* getReceipt(const int& index);
     int serviceNumber(const int& receiptIndex);
 

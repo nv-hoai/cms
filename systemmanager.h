@@ -57,6 +57,7 @@ public slots:
     void saveFoodData();
     void saveServiceData();
     void saveReceiptData();
+    void saveRevenues();
     void createReceipt(const int& customerId);
     void payReceipt(const int& receiptIndex);
     void confirmService(const int& serviceId);
@@ -76,8 +77,9 @@ private:
     FoodFilterModel *m_foodFilterModel;
     ServiceFilterModel *m_serviceFilterModel;
 
-    int revenues[8];
-    const char* systemFiles[6];
+    int revenues[7];
+    QString oldData;
+    const char* systemFiles[7];
 };
 
 #endif // SYSTEMMANAGER_H

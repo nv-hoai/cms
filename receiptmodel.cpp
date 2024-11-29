@@ -119,6 +119,16 @@ Service *ReceiptModel::getService(const int &receiptIndex, const int &serviceInd
     return nullptr;
 }
 
+HireComputer *ReceiptModel::toHireComputer(Service *sv)
+{
+    return (HireComputer*)(sv);
+}
+
+OrderFood *ReceiptModel::toOrderFood(Service *sv)
+{
+    return (OrderFood*)(sv);
+}
+
 Receipt *ReceiptModel::getReceipt(const int &index)
 {
     return m_receiptList[index];

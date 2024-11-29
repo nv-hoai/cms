@@ -29,6 +29,10 @@ ApplicationWindow {
             revenues.push(SystemManager.getRevenue(6-i));
     }
 
+    onClosing: {
+        SystemManager.saveRevenues();
+    }
+
     Connections {
         target: SystemManager
         function onRevenuesChanged () {
@@ -551,7 +555,8 @@ ApplicationWindow {
 
             Page {
                 id: aboutUs
-                anchors.fill: parent
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 Text {
                     id: aboutUsHeader
                     Layout.alignment: Qt.AlignTop

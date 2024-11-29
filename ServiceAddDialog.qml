@@ -55,7 +55,6 @@ Dialog {
             customerIndex = SystemManager.customerModel.getIndexById(customerId);
             SystemManager.customerModel.setStatus(customerIndex, 2);
             computerId = computerIdInput.value;
-            timeUsed = timeUsedInput.text;
             computerIndex = SystemManager.computerModel.getIndexById(computerId);
             SystemManager.computerModel.setStatus(computerIndex, 2);
         }
@@ -64,14 +63,13 @@ Dialog {
             foodId = foodIdInput.value;
             numberOrdered = parseInt(numberOrderedInput.text);
         }
-        receiveServiceData(serviceName, customerId, computerId, timeUsed, foodId, numberOrdered);
+        receiveServiceData(serviceName, customerId, computerId, 0, foodId, numberOrdered);
     }
 
     function isSaveAllowed() {
         return !((serviceName == "Hire computer" &&
                   (invalidCustomerId.visible ||
-                   invalidComputerId.visible ||
-                   invalidTimeUsed.visible)) ||
+                   invalidComputerId.visible)) ||
                  (serviceName == "Order food" &&
                   (foodNameShow.text == "Invalid food id!" ||
                    invalidNumberOrdered.visible)));
@@ -223,44 +221,6 @@ Dialog {
             id: invalidComputerId
             visible: (serviceName == "Hire computer" && text != "")
             text: root.checkComputer()
-            font.pixelSize: 16
-            font.weight: 40
-            color: "red"
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.maximumHeight: 24
-            visible: (serviceName == "Hire computer")
-
-            Text {
-                text: "Time use"
-                font.pixelSize: 16
-                font.weight: 40
-            }
-
-            TextField {
-                id: timeUsedInput
-                text: root.timeUsed
-                inputMask: "9999"
-                placeholderText: "XXXX"
-                Layout.preferredWidth: computerIdInput.width
-                Layout.fillHeight: true
-                font.pixelSize: 16
-                font.weight: 40
-            }
-
-            Text {
-                text: "seconds"
-                font.pixelSize: 16
-                font.weight: 40
-            }
-        }
-
-        Text {
-            id: invalidTimeUsed
-            visible: (serviceName == "Hire computer" && (timeUsedInput.text == "0" || timeUsedInput.text == ""))
-            text: (timeUsedInput.text == "0")?"0 not allowed!":"Time use can't be left empty!"
             font.pixelSize: 16
             font.weight: 40
             color: "red"

@@ -26,7 +26,13 @@ SystemManager::SystemManager(QObject *parent)
     loadServiceData("../../data/service.txt");
     loadRevenues("../../data/revenues.txt");
 
+    systemFiles[0] = "../../data/computer.txt";
+    systemFiles[1] = "../../data/customer.txt";
+    systemFiles[2] = "../../data/employee.txt";
+    systemFiles[3] = "../../data/food.txt";
+    systemFiles[4] = "../../data/service.txt";
     systemFiles[5] = "../../data/receipt.txt";
+    systemFiles[6] = "../../data/revenues.txt";
 
     m_computerFilterModel->setSourceModel(m_computerModel);
     m_customerFilterModel->setSourceModel(m_customerModel);
@@ -74,8 +80,6 @@ void SystemManager::loadComputerData(const char* path)
         return;
     }
 
-    systemFiles[0] = path;
-
     QTextStream in(&file);
     while (!in.atEnd()) {
         QString line = in.readLine();
@@ -101,7 +105,6 @@ void SystemManager::loadCustomerData(const char* path)
         return;
     }
 
-    systemFiles[1] = path;
 
     QTextStream in(&file);
     while (!in.atEnd()) {
@@ -127,8 +130,6 @@ void SystemManager::loadEmployeeData(const char* path)
         std::cerr << "Cannot open file for reading: " << file.errorString().toStdString() << std::endl;
         return;
     }
-
-    systemFiles[2] = path;
 
     QTextStream in(&file);
     while (!in.atEnd()) {
@@ -156,8 +157,6 @@ void SystemManager::loadFoodData(const char* path)
         return;
     }
 
-    systemFiles[3] = path;
-
     QTextStream in(&file);
     while (!in.atEnd()) {
         QString line = in.readLine();
@@ -182,8 +181,6 @@ void SystemManager::loadServiceData(const char* path)
         std::cerr << "Cannot open file for reading: " << file.errorString().toStdString() << std::endl;
         return;
     }
-
-    systemFiles[4] = path;
 
     QTextStream in(&file);
     while (!in.atEnd()) {
@@ -242,7 +239,7 @@ void SystemManager::loadRevenues(const char *path)
     for (int i=1; i<7; i++)
         in >> revenues[i];
 
-    revenues;
+    oldData = in.readAll();
 
     file.close();
 }
@@ -372,4 +369,24 @@ void SystemManager::saveServiceData()
 void SystemManager::saveReceiptData()
 {
     m_receiptModel->saveReceiptData(systemFiles[5]);
+}
+
+void SystemManager::saveRevenues()
+{
+
+    QFile file(systemFiles[6]);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        std::cerr << "Cannot open file for writing: " << file.errorString().toStdString() << std::endl;
+        return;
+    }
+
+    QTextStream out(&file);
+
+    out << QDate::currentDate().toString("dd/MM/yyyy"); Qt::endl(out);
+
+    for (auto e: revenues)
+        out << e << " ";
+
+    out << oldData;
 }
