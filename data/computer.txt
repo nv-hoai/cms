@@ -28,4 +28,3 @@ Intel Core i3;8;27;0;11
 AMD Ryzen 5 PRO;16;28;0;14
 Intel Core i7;64;29;0;22
 Intel Core i5;16;30;0;15
-sdjafjkdsfkjsakf;2;31;0;12

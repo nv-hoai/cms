@@ -388,5 +388,5 @@ void SystemManager::saveRevenues()
     for (auto e: revenues)
         out << e << " ";
 
-    out << oldData;
+    out << oldData.trimmed();
 }
